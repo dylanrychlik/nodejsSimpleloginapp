@@ -1,4 +1,4 @@
-var snowflake = require('snowflake-sdk');
+//var snowflake = require('snowflake-sdk');
 /**
 * Module dependencies.
 */
@@ -10,15 +10,13 @@ const express = require('express')
 //const methodOverride = require('method-override');
 const session = require('express-session');
 const app = express();
-const mysql      = require('mysql');
+const mysql  = require('mysql');
 let bodyParser=require("body-parser");
-var connection = snowflake.createConnection( {
-         account: 'zya38129.us-east-1',
-         username: 'DRYCH',
-         password: '3Hotdogs!',
-         database: 'MAHITIX'
-         }
-       );
+var connection = mysql.createConnection({
+  host: "cloud19.hostgator.com",
+  user: "uzaqleuw_root",
+  password: "3Hotdogs!"
+});
 
 connection.connect( 
   function(err, conn) {
@@ -26,9 +24,9 @@ connection.connect(
           console.error('Unable to connect: ' + err.message);
           } 
       else {
-          console.log('Successfully connected to Snowflake test account.');
+          console.log('Successfully connected to mysql  test account.');
           // Optional: store the connection ID.
-          connection_ID = conn.getId();
+         // connection_ID = connection.getId();
           }
       }
   );
@@ -36,7 +34,8 @@ connection.connect(
 //global.db = connection;
  
 // all environments
-app.set('port', process.env.PORT || 8081);
+const PORT = process.env.PORT || '8080'
+app.set('port', PORT);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -70,4 +69,4 @@ app.post('/home/profile', user.editprofile);//to render users profile
 app.get('/verification/', user.verify);
 //Middleware
 //Middleware
-app.listen(8081);
+app.listen(PORT);

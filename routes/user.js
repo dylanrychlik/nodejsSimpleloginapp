@@ -1,4 +1,5 @@
-var snowflake = require('snowflake-sdk');
+//var snowflake = require('snowflake-sdk');
+const mysql   = require('mysql');
 const nodemailer = require('nodemailer');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -35,68 +36,50 @@ var verification = verify;
 
 exports.verify = function (req, res) {
    var email = 'dylanrychlik@gmail.com';//'req.body.email';
- var connection = snowflake.createConnection( {
-         account: 'zya38129.us-east-1',
-         username: 'DRYCH',
-         password: '3Hotdogs!',
-         database: 'MAHITIX'
-         }
-       );
+   var connection = mysql.createConnection({
+      host: "cloud19.hostgator.com",
+      user: "uzaqleuw_root",
+      password: "3Hotdogs!"
+    });
+    
 
-   connection.connect(
-      function (err, conn) {
-         if (err) {
-            console.error('Unable to connect: ' + err.message);
-         }
+ 
+   
+      var sqlText  = "SELECT ID, VERIFICATION FROM uzaqleuw_Simpledatabase.Accounts WHERE EMAIL = ?";
+      connection.connect(function(err) {
+         if (err) {throw err;}
          else {
-            console.log('Successfully connected to Snowflake.');
-            // Optional: store the connection ID.
-            connection_ID = conn.getId();
-         }
+         console.log("Connected!");
+         connection.query(sqlText,[email], function (err, result) {
+           if (err) {throw err;}else {
+           console.log("Result: " + result);
+           //console.log("verification", result[0].VERIFICATION);
+           //verification = result[0].VERIFICATION;
+           console.log("verification", verification);
+           }
+         });
       }
-   );
-   connection.execute({
-      sqlText: "SELECT ID, VERIFICATION FROM MAHITIX.PUBLIC.ACCOUNTS WHERE EMAIL = ?",
-      binds: [email],
-      complete: function (err, stmt, rows) {
-         if (err) {
-            console.log(err);
-         } else {
-            console.log("verification", rows[0].VERIFICATION);
-            verification = rows[0].VERIFICATION;
-            console.log("verification", verification);
-            /*  var verify1 = req.query.verify;
-              var verify2 = result[0].verification; 
-              if(verify1 == verify2) {
-                  activateAccount(result[0].verification);
-              }else{
-                  res.send("<h1>verification fail</h1>")
-              } */
-         }
-      }
-   });
+       });
+      
+   
+   
    var get = req.body;
    console.log("verification", verification);
    console.log("verification", verify);
    if (verification == verify) {
-      connection.execute({
-         sqlText: "UPDATE MAHITIX.PUBLIC.ACCOUNTS SET VERIFICATION = ?",
-         binds: [verify],
-         complete: function (err, stmt, rows) {
-            if (err) {
-               console.log(err);
-            }
-            else {
-               /* let userdata = {
-                    Email: `${req.body.email}`,
-                    verify: "TRUE"
-                 }*/
-               res.cookie("UserInfo", rows[0]);
-               res.send('<h1>Account Verification Successfully</h1>');
-            }
-         }
-      });
-   }
+     
+        var sqlText = "UPDATE uzaqleuw_Simpledatabase.Accounts SET VERIFICATION =" + verification;
+       
+         connection.query(sqlText, function (err, result) {
+           if (err) {throw err;}else {
+         
+         res.cookie("UserInfo", result);
+         res.send('<h1>Account Verification Successfully</h1>');
+           }
+         });
+      }      
+     
+    
    else {
       res.send("<h1>verification failed</h1>")
    }
@@ -104,7 +87,6 @@ exports.verify = function (req, res) {
 
 
 }
-
 var email;
 //---------------------------------------------signup page call------------------------------------------------------
 exports.signup = function (req, res) {
@@ -112,34 +94,20 @@ exports.signup = function (req, res) {
    if (req.method == "POST") {
 
       //var verification = post.verification;
-   var connection = snowflake.createConnection( {
-         account: 'zya38129.us-east-1',
-         username: 'DRYCH',
-         password: '3Hotdogs!',
-         database: 'MAHITIX'
-         }
-       );
-      connection.connect(
-         function (err, conn) {
-            if (err) {
-               console.error('Unable to connect: ' + err.message);
-            }
-            else {
-               console.log('Successfully connected to Snowflake.');
-               // Optional: store the connection ID.
-               connection_ID = conn.getId();
-            }
-         }
-      );
+   var connection = mysql.createConnection({
+      host: "cloud19.hostgator.com",
+      user: "uzaqleuw_root",
+      password: "3Hotdogs!"
+    });
+ 
 
 
       var mailOption = {
          from: 'dylanrychlik@gmail.com', // sender this is your email here
          to: `${req.body.email}`, // receiver email2
          subject: "Account Verification",
-         html: `<h1>Hello Friend Please Click on this link<h1><br><hr><p>HELLO I AM 
-      THECODERANK I MAKE THIS TUTORIAL FOR MY SUBSCRIBERS AND OUR FRIENDS.</p>
-      <br><a href="http://localhost:8081/verification/?verify=${verify}">CLICK ME TO ACTIVATE YOUR ACCOUNT</a>`
+         html: `<h1>Hello Friend Please Click on this link to verify your account<h1><br><hr>
+      <br><a href="http://localhost:8080/verification/?verify=${verify}">CLICK ME TO ACTIVATE YOUR ACCOUNT</a>`
       }
       var post = req.body;
       var name = post.user_name;
@@ -147,39 +115,31 @@ exports.signup = function (req, res) {
       var fname = post.first_name;
       var lname = post.last_name;
        email = post.email;
-
+       var sqlText = "INSERT INTO uzaqleuw_Simpledatabase.Accounts(ID, FIRST_NAME,LAST_NAME,EMAIL,USER_NAME, PASSWORD,VERIFICATION) VALUES ('','" + fname + "','" + lname + "','" + email + "','" + name + "','" + pass + "','" + verify + "');";
       //var verification = post.verify;
-      connection.execute({
-
-         sqlText: "INSERT INTO MAHITIX.PUBLIC.ACCOUNTS(ID, FIRST_NAME,LAST_NAME,EMAIL,USER_NAME, PASSWORD,VERIFICATION) VALUES ('2','" + fname + "','" + lname + "','" + email + "','" + name + "','" + pass + "','" + verify + "');",
-
-         complete: function (err) {
-            if (err) {
-               console.error('Failed to execute statement due to the following error: ' + err.message);
-               res.render('signup');
-            }
-            if (err) {
-               console.log(err)
+      connection.connect(function(err) {
+         if (err) throw err;
+         console.log("Connected RYAN!");
+         connection.query(sqlText, function (err, result) {
+           if (err){throw err;} else {
+           console.log("Result: " + result);
+           transporter.sendMail(mailOption, (error, info) => {
+            if (error) {
+               console.log('Test ALEX!',error);
             } else {
-               transporter.sendMail(mailOption, (error, info) => {
-                  if (error) {
-                     console.log(error)
-                  } else {
 
-                     let userdata = {
-                        email: `${req.body.email}`,
-                     }
-                     res.cookie("UserInfo", userdata);
-                     res.send("Your Mail Send Successfully")
-                  }
-               })
-               console.log('Data Successfully insert')
+               let userdata = {
+                  email: `dylanrychlik@gmail.com`,
+               }
+              // res.cookie("UserInfo", userdata);
+               res.send("Please check your email to verify your account.")
             }
+         })
 
-         }
-      });
-
-   }
+                  }
+                        });
+       });
+      }
    else {
       res.render('signup');
    }
@@ -194,8 +154,8 @@ console.log('req.body:',req.body);
       from: 'dylanrychlik@gmail.com', // sender this is your email here
       to: `${req.body.user_name}`, // receiver email2
       subject: "Forgot Password",
-      html: `<h1>Hello Friend Please Click on this link
-         <br><a href="http://localhost:8081/reset">CLICK ME TO RESET YOUR PASSWORD</a>`
+      html: `<h1Please Click on this link to reset your password
+         <br><a href="http://localhost:8080/reset">CLICK ME TO RESET YOUR PASSWORD</a>`
 
 
    }
@@ -208,7 +168,7 @@ console.log('req.body:',req.body);
             email: 'dylanrychlik@gmail.com',
          }
          res.cookie("UserInfo", userdata);
-         res.send("Your Mail Send Successfully")
+         res.send("Please check your email to reset your password")
       }
    })
  
@@ -234,27 +194,11 @@ exports.reset = function (req, res) {
    message = '';
    if (req.method == "POST") {
       //var verification = post.verification;
-     var connection = snowflake.createConnection( {
-         account: 'zya38129.us-east-1',
-         username: 'DRYCH',
-         password: '3Hotdogs!',
-         database: 'MAHITIX'
-         }
-       );
-
-      connection.connect(
-         function (err, conn) {
-            if (err) {
-               console.error('Unable to connect: ' + err.message);
-            }
-            else {
-               console.log('Successfully connected to Snowflake.');
-               // Optional: store the connection ID.
-               connection_ID = conn.getId();
-            }
-         }
-      );
-
+      var connection = mysql.createConnection({
+         host: "cloud19.hostgator.com",
+         user: "uzaqleuw_root",
+         password: "3Hotdogs!"
+       });
 
       var post = req.body;
 
@@ -267,12 +211,27 @@ exports.reset = function (req, res) {
       }
 
       //var verification = post.verify;
-      connection.execute({
+   
 
          //sqlText: "INSERT INTO MAHITIX.PUBLIC.ACCOUNTS(ID, FIRST_NAME,LAST_NAME,EMAIL,USER_NAME, PASSWORD,VERIFICATION) VALUES ('2','" + fname + "','" + lname + "','" + email + "','" + name + "','" + pass + "','" + verify + "');",
-         sqlText: "UPDATE MAHITIX.PUBLIC.ACCOUNTS SET PASSWORD = '" + pass + "' WHERE EMAIL = '" + email + "';",
+        var sqlText = "UPDATE uzaqleuw_Simpledatabase.Accounts SET PASSWORD = '" + pass + "' WHERE EMAIL = '" + email + "';";
+        connection.connect(function(err) {
+         if (err) throw err;
+         console.log("Connected! Reset!");
+         connection.query(sqlText, function (err, result) {
+           if (err) {throw err;} 
+           else {
 
-         complete: function (err) {
+
+            console.log('Data Successfully updated');
+
+            console.log(email);
+            console.log(pass);
+            res.render('index');
+         }
+         });
+       });
+       /*  complete: function (err) {
             if (err) {
                console.error('Failed to execute statement due to the following error: ' + err.message);
                res.render('index');
@@ -291,6 +250,7 @@ exports.reset = function (req, res) {
          }
 
       });
+*/
 
 
    } else {
@@ -299,22 +259,25 @@ exports.reset = function (req, res) {
 
 }
 
+
+var userID; 
 //-----------------------------------------------login page call------------------------------------------------------
 exports.login = function (req, res) {
    var message = '';
    var sess = req.session;
+   console.log('sess: ',req.body);
 
    if (req.method == "POST") {
       var post = req.body;
+      var id = post.userId;
       var Email = post.user_name;
       var Pass = post.password;
-   var connection = snowflake.createConnection( {
-         account: 'zya38129.us-east-1',
-         username: 'DRYCH',
-         password: '3Hotdogs!',
-         database: 'MAHITIX'
-         }
-       );
+      console.log('Test: ',id);
+      var connection = mysql.createConnection({
+         host: "cloud19.hostgator.com",
+         user: "uzaqleuw_root",
+         password: "3Hotdogs!"
+       });
 
       connection.connect(
          function (err, conn) {
@@ -324,36 +287,34 @@ exports.login = function (req, res) {
             else {
                console.log('Successfully connected to Snowflake.');
                // Optional: store the connection ID.
-               connection_ID = conn.getId();
+               //connection_ID = conn.getId();
             }
          }
       );
 
-      connection.execute({
-         sqlText: "select ID, EMAIL,PASSWORD from MAHITIX.PUBLIC.ACCOUNTS where EMAIL = ? and PASSWORD = ?",
-         binds: [Email, Pass],
-         complete: function (err, stmt, rows) {
-            if (err) {
-               console.error('Failed to execute statement due to the following error: ' + err.message);
-            }
-            else {
-               console.log('Successfully executed statement: ' + stmt.getSqlText());
-               console.log(rows);
-               if (rows <= 1) {
-                  message = 'Wrong Credentials.';
-                  res.render('index.ejs', { message: message });
-               } else {
-                  console.error('login successful');
-                  sess.userId = rows[0].ID;
-                  sess.user = rows[0];
-                  console.log(rows[0].ID);
-                  res.redirect('/home/dashboard');
-               }
+  
+        var sqlText = "select ID,EMAIL,PASSWORD from uzaqleuw_Simpledatabase.Accounts where EMAIL = ? and PASSWORD = ?";
+        connection.query(sqlText, [Email,Pass], function (err, result) {
+         if (err) {throw err;}
+         else {
+         console.log(result);
+       
+            console.log('Successfully executed statement: ');
+            console.log(result);
+            if (result <= 1) {
+               message = 'Wrong Credentials.';
+               res.render('index.ejs', { message: message });
+            } else {
+               console.error('login successful');
+               
+               userID = JSON.stringify(result[0].ID);
+               sess.user = result;
+               console.log('User id:',JSON.stringify(result[0].ID));
+               res.redirect('/home/dashboard');
             }
          }
-
-
-      });
+       });
+       
    }
    else {
       res.render('index.ejs', { message: message });
@@ -366,20 +327,18 @@ exports.login = function (req, res) {
 
 exports.dashboard = function (req, res, next) {
 
-   var user = req.session.user,
-      userId = req.session.userId;
-   console.log('ddd=' + userId);
-   if (userId == null) {
+ 
+   console.log('ddd=' + userID);
+   if (userID == null) {
       res.redirect("/login");
       return;
    }
- var connection = snowflake.createConnection( {
-         account: 'zya38129.us-east-1',
-         username: 'DRYCH',
-         password: '3Hotdogs!',
-         database: 'MAHITIX'
-         }
-       );
+   var connection = mysql.createConnection({
+      host: "cloud19.hostgator.com",
+      user: "uzaqleuw_root",
+      password: "3Hotdogs!"
+    });
+    
 
    connection.connect(
       function (err, conn) {
@@ -389,15 +348,13 @@ exports.dashboard = function (req, res, next) {
          else {
             console.log('Successfully connected to Snowflake.');
             // Optional: store the connection ID.
-            connection_ID = conn.getId();
+          //  connection_ID = conn.getId();
          }
       }
    );
-   var sql = "SELECT * FROM `ACCOUNTS` WHERE `ID`='" + userId + "'";
-
-   connection.execute({
-      sqlText: "select *  from MAHITIX.PUBLIC.ACCOUNTS where ID='" + userId + "'",
-      complete: function (err) {
+   var sql = "select *  from uzaqleuw_Simpledatabase.Accounts where ID='" + userID + "'";
+  // sqlText: "select *  from uzaqleuw_Simpledatabase.ACCOUNTS where ID='" + userID + "'",
+   connection.query(sql,function(err) {
          if (err) {
             console.error('Failed to execute statement due to the following error: ' + err.message);
          }
@@ -405,8 +362,7 @@ exports.dashboard = function (req, res, next) {
 
             res.render('dashboard.ejs');
          }
-      }
-   });
+      });
 };
 //------------------------------------logout functionality----------------------------------------------
 exports.logout = function (req, res) {
@@ -423,7 +379,7 @@ exports.profile = function (req, res) {
       res.redirect("/login");
       return;
    }
-  var connection = snowflake.createConnection( {
+  var connection = mysql.createConnection( {
          account: 'zya38129.us-east-1',
          username: 'DRYCH',
          password: '3Hotdogs!',
@@ -439,7 +395,7 @@ exports.profile = function (req, res) {
          else {
             console.log('Successfully connected to Snowflake.');
             // Optional: store the connection ID.
-            connection_ID = conn.getId();
+          //  connection_ID = conn.getId();
          }
       }
    );
@@ -496,7 +452,7 @@ exports.editprofile = function (req, res) {
          res.redirect("/login");
          return;
       }
-    var connection = snowflake.createConnection( {
+    var connection = mysql.createConnection( {
          account: 'zya38129.us-east-1',
          username: 'DRYCH',
          password: '3Hotdogs!',
@@ -512,7 +468,7 @@ exports.editprofile = function (req, res) {
             else {
                console.log('Successfully connected to Snowflake.');
                // Optional: store the connection ID.
-               connection_ID = conn.getId();
+            //   connection_ID = conn.getId();
             }
          }
       );
