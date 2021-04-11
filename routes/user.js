@@ -107,7 +107,7 @@ exports.signup = function (req, res) {
          to: `${req.body.email}`, // receiver email2
          subject: "Account Verification",
          html: `<h1>Hello Friend Please Click on this link to verify your account<h1><br><hr>
-      <br><a href="https://radiant-castle-92259.herokuapp.coms/verification/?verify=${verify}">CLICK ME TO ACTIVATE YOUR ACCOUNT</a>`
+      <br><a href="https://radiant-castle-92259.herokuapp.com/verification/?verify=${verify}">CLICK ME TO ACTIVATE YOUR ACCOUNT</a>`
       }
       var post = req.body;
       var name = post.user_name;
