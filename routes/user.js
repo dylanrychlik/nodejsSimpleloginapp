@@ -155,7 +155,7 @@ console.log('req.body:',req.body);
       to: `${req.body.user_name}`, // receiver email2
       subject: "Forgot Password",
       html: `<h1Please Click on this link to reset your password
-         <br><a href="https://radiant-castle-92259.herokuapp.coms/verification/reset">CLICK ME TO RESET YOUR PASSWORD</a>`
+         <br><a href="https://radiant-castle-92259.herokuapp.com/verification/reset">CLICK ME TO RESET YOUR PASSWORD</a>`
 
 
    }
